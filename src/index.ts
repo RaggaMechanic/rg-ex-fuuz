@@ -1,14 +1,22 @@
-import { Engine, Loader, DisplayMode, Input, vec, Color, ExitTriggerEvent, Actor } from 'excalibur';
+import { Actor, Color, DisplayMode, Engine, ExitTriggerEvent, Font, Loader, Input, Label, vec, TextAlign } from 'excalibur';
 import { LevelOne } from './scenes/level-one/level-one';
 import { Player } from './actors/player/player';
 import { Resources } from './resources';
 import { RButton } from './ui/rbutton'
 
+class GameStats {
+  kills : number = 0;
+  points : number = 0;
+}
+
 /**
  * Managed game class
  */
 class Game extends Engine {
+  
+  public gameStats : GameStats = new GameStats;
   public player: Player;
+  private pointsText : Label;
   private levelOne: LevelOne;
 
   constructor() {
@@ -16,25 +24,50 @@ class Game extends Engine {
   }
 
   public start() {
-
     const windowBounds = window.document.body.getBoundingClientRect();
+    const screenCenter = vec(windowBounds.width / 2, windowBounds.height / 2)
     // Create new scene with a player
     this.levelOne = new LevelOne();
     this.player = new Player();
-    this.player.pos = vec(windowBounds.width / 2, windowBounds.height / 2)
+    this.player.pos = screenCenter.clone();
+    this.player.on('moved', (evt: ExitTriggerEvent) => { console.log(evt); });
     this.levelOne.add(this.player);
 
-    this.player.on('moved', (evt: ExitTriggerEvent) => { console.log(evt); });
+    const pointsText = () => `Points: ${this.gameStats.points}  Kills: ${this.gameStats.kills}`;
+    // todo: create ui text class
+    this.pointsText = new Label({
+      pos: vec(70, 100),
+      text: pointsText(),
+      font: new Font({ 
+        size: 30, 
+        color: Color.White, 
+        textAlign: TextAlign.Left,
+        family: 'monospace' }),
+    });
+    this.levelOne.add(this.pointsText);
 
-    const newTarget = () => {
-      const playerMob = new Player();
+    const newMob = () => {
+      const playerMob = new Player({ health: 400, velocity: 100 });
+      const screenCenter = vec(windowBounds.width / 2, windowBounds.height / 2)
+      const yShift = Math.random() * 200;
+      const xShift = Math.random() * 300;
       playerMob.color = Color.Red;
-      playerMob.pos = vec(windowBounds.width / 2 + 200 , windowBounds.height / 2 + Math.random() * 100);
+      playerMob.pos = vec(screenCenter.x + xShift , screenCenter.y + yShift);
       this.levelOne.add(playerMob);
     };
 
-    newTarget();
-    this.levelOne.on('kill-unit', (event) => setTimeout(() => newTarget(), 900));
+    newMob();
+    this.levelOne.on('kill-unit', (event) => { 
+      console.log(event);
+      const mob : Player = event['unit'];
+      this.gameStats.kills++;
+      this.gameStats.points += mob.savedOpts.health / 10;
+      console.log(this.gameStats)
+      this.pointsText.text = pointsText();
+      const resTime = 600;
+      setTimeout(() => newMob(), resTime);
+      setTimeout(() => newMob(), resTime * 2);
+    });
 
     let shootTime : number = 0;
     const shootInterval : number = 300;
@@ -43,7 +76,7 @@ class Game extends Engine {
       if (shootTime > 0)
         shootTime -= event.delta;
       if (event.engine.input.keyboard.isHeld(Input.Keys.Space) && shootTime <= 0) {
-        this.player.shoot();
+        this.player.shoot(this.levelOne.engine.input.pointers.primary.lastWorldPos);
         shootTime = shootInterval;
       }
     })

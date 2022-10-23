@@ -1,4 +1,5 @@
 import { Actor, Color, vec, Vector } from 'excalibur';
+import { Player } from './player';
 // import { Resources } from '../../resources';
 
 export class Bullet extends Actor {
@@ -6,8 +7,10 @@ export class Bullet extends Actor {
   public velocity : number = 650;
   public distance : number = 300;
   public damage : number = 100;
+  public bulletOwner : Player = null;
+  public bulletType : any = null; // todo: realese bullet type
 
-  constructor(pos : Vector, targetPos : Vector = vec(1, 0)) {
+  constructor(pos : Vector, targetPos : Vector = vec(1, 0), owner : Player = null) {
     super({
       pos: pos,
       width: 5,
@@ -15,6 +18,7 @@ export class Bullet extends Actor {
       color: Color.Yellow
     });
 
+    this.bulletOwner = owner;
     // calc shoot point
     const shootVector = targetPos.sub(pos).normalize();
     shootVector.size = this.distance;
@@ -28,10 +32,12 @@ export class Bullet extends Actor {
   }
 
   public die() {
+    this.active = false;
     this.actions.clearActions();
-    this.actions
-      .callMethod(() => this.color = Color.Orange)
-      .scaleBy(vec(0, 10), 200)
-      .callMethod(() => this.color = Color.Red).die();
+    this.actions.die();
+    // hit effect: 
+    // .callMethod(() => this.color = Color.Orange)
+    // .scaleBy(vec(0, 10), 200)
+    // .callMethod(() => this.color = Color.Red).die();
   }
 }
