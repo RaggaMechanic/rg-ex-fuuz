@@ -43,8 +43,13 @@ export class Player extends Actor {
         this.die();
         return;
       }
-
+      
       this.actions.meet(bullet.bulletOwner, this.velocity).toPromise();
+      // const oldColor = this.color;
+      // this.actions.callMethod(() => { this.color = Color.White })
+      //   .toPromise()
+      //   .then(() => new Promise((res, rej) => setTimeout(res, 10)))
+      //   .then(() => { this.color = oldColor });
     });
   }
 

@@ -1,4 +1,4 @@
-import { Actor, Color, DisplayMode, Engine, ExitTriggerEvent, Font, Loader, Input, Label, vec, TextAlign } from 'excalibur';
+import { Actor, Color, CollisionType, DisplayMode, Engine, ExitTriggerEvent, Font, Loader, Input, Label, vec, TextAlign, CoordPlane } from 'excalibur';
 import { LevelOne } from './scenes/level-one/level-one';
 import { Player } from './actors/player/player';
 import { Resources } from './resources';
@@ -28,14 +28,21 @@ class Game extends Engine {
     const screenCenter = vec(windowBounds.width / 2, windowBounds.height / 2)
     // Create new scene with a player
     this.levelOne = new LevelOne();
+
+    // add player
     this.player = new Player();
     this.player.pos = screenCenter.clone();
-    this.player.on('moved', (evt: ExitTriggerEvent) => { console.log(evt); });
+    this.player.on('postupdate', (evt: ExitTriggerEvent) => { 
+      this.levelOne.camera.move(this.player.pos, 0);
+    });
     this.levelOne.add(this.player);
 
+    // add some ui
     const pointsText = () => `Points: ${this.gameStats.points}  Kills: ${this.gameStats.kills}`;
     // todo: create ui text class
     this.pointsText = new Label({
+      collisionType: CollisionType.PreventCollision,
+      coordPlane: CoordPlane.Screen,
       pos: vec(70, 100),
       text: pointsText(),
       font: new Font({ 
@@ -45,7 +52,10 @@ class Game extends Engine {
         family: 'monospace' }),
     });
     this.levelOne.add(this.pointsText);
+    // const startBtn : RButton = new RButton(windowBounds.width / 2, windowBounds.height / 2);
+    // this.levelOne.add(startBtn);
 
+    // add mob logic
     const newMob = () => {
       const playerMob = new Player({ health: 400, velocity: 100 });
       const screenCenter = vec(windowBounds.width / 2, windowBounds.height / 2)
@@ -58,20 +68,20 @@ class Game extends Engine {
 
     newMob();
     this.levelOne.on('kill-unit', (event) => { 
-      console.log(event);
+      // console.log(event);
       const mob : Player = event['unit'];
       this.gameStats.kills++;
       this.gameStats.points += mob.savedOpts.health / 10;
-      console.log(this.gameStats)
+      // console.log(this.gameStats)
       this.pointsText.text = pointsText();
       const resTime = 600;
       setTimeout(() => newMob(), resTime);
       setTimeout(() => newMob(), resTime * 2);
     });
 
+    // add player shoot logic
     let shootTime : number = 0;
     const shootInterval : number = 300;
-
     this.on('postupdate', (event) => {
       if (shootTime > 0)
         shootTime -= event.delta;
@@ -81,9 +91,7 @@ class Game extends Engine {
       }
     })
 
-    // const startBtn : RButton = new RButton(windowBounds.width / 2, windowBounds.height / 2);
-    // this.levelOne.add(startBtn);
-
+    // end init
     game.backgroundColor = Color.Black;
     game.add('levelOne', this.levelOne);
 

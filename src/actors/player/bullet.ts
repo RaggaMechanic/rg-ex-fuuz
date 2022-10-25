@@ -1,4 +1,4 @@
-import { Actor, Color, vec, Vector } from 'excalibur';
+import { Actor, Color, CollisionType, Vector, vec } from 'excalibur';
 import { Player } from './player';
 // import { Resources } from '../../resources';
 
@@ -15,7 +15,8 @@ export class Bullet extends Actor {
       pos: pos,
       width: 5,
       height: 5,
-      color: Color.Yellow
+      color: Color.Yellow,
+
     });
 
     this.bulletOwner = owner;
@@ -32,12 +33,10 @@ export class Bullet extends Actor {
   }
 
   public die() {
-    this.active = false;
     this.actions.clearActions();
+    // this.actions.die();
+    // hit effect:
+    this.body.collisionType = CollisionType.PreventCollision; 
     this.actions.die();
-    // hit effect: 
-    // .callMethod(() => this.color = Color.Orange)
-    // .scaleBy(vec(0, 10), 200)
-    // .callMethod(() => this.color = Color.Red).die();
   }
 }
