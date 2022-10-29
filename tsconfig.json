@@ -3,8 +3,20 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "target": "es2015",
+    "target": "es2020",
     "module": "es6",
+    "lib": ["es2020", "dom"],
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "importHelpers": true,
+
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "types": ["node"],
+
     "sourceMap": true,
     "outDir": "./dist/"
   }

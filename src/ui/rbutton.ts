@@ -1,4 +1,5 @@
 import { ScreenElement, vec } from 'excalibur';
+import { Emitter } from '../actors/core/emitor';
 import { Resources } from '../resources';
 
 export class RButton extends ScreenElement {
@@ -7,24 +8,37 @@ export class RButton extends ScreenElement {
       pos: vec(x, y),
       width: 128,
       height: 64,
-    })
+    });
   }
 
   onInitialize() {
     this.graphics.add('default', Resources.StartButtonBackground.toSprite());
     this.graphics.add('hover', Resources.StartButtonHovered.toSprite());
 
-    this.on('pointerdown', () => {
-      console.log('pointerdown', this.graphics.getNames());
+    const emitter = new Emitter(this);
+    emitter.addEvent({
+      type: 'pointerdown',
+      handler: () => {
+        console.log('pointerdown', this.graphics.getNames());
+      },
     });
-    this.on('pointerup', () => {
-      console.log('pointerup');
+    emitter.addEvent({
+      type: 'pointerup',
+      handler: () => {
+        console.log('pointerup');
+      },
     });
-    this.on('pointerenter', () => { 
-      this.graphics.show('hover');
+    emitter.addEvent({
+      type: 'pointerenter',
+      handler: () => {
+        this.graphics.show('hover');
+      },
     });
-    this.on('pointerleave', () => {
-      this.graphics.show('default');
+    emitter.addEvent({
+      type: 'pointerleave',
+      handler: () => {
+        this.graphics.show('default');
+      },
     });
   }
 }
